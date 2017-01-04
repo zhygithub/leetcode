@@ -1,9 +1,11 @@
 package leetcode;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -26,14 +28,29 @@ import java.util.List;
  */
 public class Subsets {
 
-    private List<List<Integer>> mList;
+    private HashSet<String> mHashSet;
 
     private int[] mSign;
 
     public List<List<Integer>> subsets(int[] nums) {
-        mList = new ArrayList<>();
+        Arrays.sort(nums);
+        List<List<Integer>> mList = new ArrayList<>();
+        mHashSet = new HashSet<>();
         mSign = new int[nums.length];
         deep(nums,0);
+        mList.clear();
+        for (String str:mHashSet){
+            String[] split = str.split("[:]");
+            List<Integer> list = new ArrayList<>();
+            if(split != null){
+                for(int i = 0 ; i < split.length ; i++){
+                    if(split[i] != null && split[i].length()>=1){
+                        list.add(Integer.parseInt(split[i]));
+                    }
+                }
+                mList.add(list);
+            }
+        }
         return mList;
     }
 
@@ -43,12 +60,14 @@ public class Subsets {
             return ;
         }
         List<Integer>  list = new ArrayList<>();
+        StringBuilder target  = new StringBuilder();
         for(int i = 0 ; i < nums.length ; i ++){
             if(mSign[i] == 1){
                 list.add(nums[i]);
+                target = target.append(nums[i]+":");
             }
         }
-        mList.add(list);
+        mHashSet.add(target.toString());
         for(int i = step ; i < nums.length ; i++){
             mSign[i] = 1;
             deep(nums,i+1);
@@ -64,7 +83,7 @@ public class Subsets {
      *  1                                  总的list： 1
      *  2 ，12                             总的list： 1 ，2 ，12
      *  3 ，13，23，123                    总的list： 1 ，2 ，12 ，3，13，23，123
-     *  
+     *
      * @param nums
      * @return
      */
@@ -83,12 +102,38 @@ public class Subsets {
             res.addAll(tmp);
         }
         return res;
+    }
 
+    /**
+     * 巧妙的思路
+     * 接着 subsets2 方法的思路
+     * 在去重方面则是去避免第二个相同的数字去跟第一个相同的数字去做重复的步骤
+     * @param nums
+     * @return
+     */
+    public List<List<Integer>> subsetsT2(int[] nums) {
+        Arrays.sort(nums);
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        result.add(new ArrayList<Integer>());
+        int begin = 0;
+        for(int i = 0; i < nums.length; i++){
+            if(i == 0 || nums[i] != nums[i - 1]){
+                begin = 0;
+            }
+            int size = result.size();
+            for(int j = begin; j < size; j++){
+                List<Integer> cur = new ArrayList<Integer>(result.get(j));
+                cur.add(nums[i]);
+                result.add(cur);
+            }
+            begin = size;
+        }
+        return result;
     }
 
     public  static void main(String[] args){
         Subsets subsets = new Subsets();
-        int[] array = new int[]{1,2,3};
-        System.out.print(subsets.subsets2(array).toString());
+        int[] array = new int[]{1,2,2};
+        System.out.print(subsets.subsetsT2(array).toString());
     }
 }
